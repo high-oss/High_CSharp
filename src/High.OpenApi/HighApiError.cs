@@ -66,7 +66,12 @@ public sealed class HighApiError : Exception
             ? string.Join("; ", messages)
             : (snippet is { Length: > 0 } ? $"HTTP {status}: {snippet}" : $"HTTP {status}");
 
-        object? effectiveBody = body is not null ? body : fallbackText;
+        // Explicitly typed as object?: a plain ternary between JsonNode and
+        // string lets the compiler pick JsonNode as the common type (JsonValue
+        // defines an implicit `string -> JsonNode` conversion for convenient
+        // construction), silently wrapping fallbackText in a JsonValue instead
+        // of keeping it a plain string.
+        object? effectiveBody = body is not null ? (object?)body : fallbackText;
 
         return new HighApiError(message, status, code, requestId, messages, effectiveBody);
     }

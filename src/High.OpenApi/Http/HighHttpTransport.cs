@@ -60,12 +60,12 @@ internal static class HighHttpTransport
             // break is worse than failing now.
             if (delay.TotalMilliseconds > config.MaxRetryDelayMs)
             {
-                config.Logger.Warn(
+                config.Logger!.Warn(
                     $"HIGH giving up: server asked for {(long)delay.TotalMilliseconds}ms, over the {config.MaxRetryDelayMs}ms ceiling {Redaction.RedactUrl(url)}");
                 break;
             }
 
-            config.Logger.Warn(
+            config.Logger!.Warn(
                 $"HIGH retry {index + 1}/{maxAttempts - 1} after {(long)delay.TotalMilliseconds}ms (HTTP {last.Status}) {Redaction.RedactUrl(url)}");
 
             // Task.Delay observes cancellationToken natively, so a caller's abort
@@ -108,10 +108,10 @@ internal static class HighHttpTransport
     {
         using var request = BuildRequest(config, options, url);
 
-        config.Logger.Debug(
+        config.Logger!.Debug(
             $"HIGH -> {options.Method.Method} {Redaction.RedactUrl(url)}",
             options.Body is null ? null : new { body = Redaction.RedactBody(options.Body, HighJsonOptions.Default) });
-        config.Logger.Info($"HIGH {options.Method.Method} {Redaction.RedactUrl(url)}");
+        config.Logger!.Info($"HIGH {options.Method.Method} {Redaction.RedactUrl(url)}");
 
         using var timeoutCts = new CancellationTokenSource(config.TimeoutMs);
         using var linked = CancellationTokenSource.CreateLinkedTokenSource(callerToken, timeoutCts.Token);
@@ -121,7 +121,7 @@ internal static class HighHttpTransport
         string text;
         try
         {
-            response = await config.HttpClient
+            response = await config.HttpClient!
                 .SendAsync(request, HttpCompletionOption.ResponseHeadersRead, linked.Token)
                 .ConfigureAwait(false);
             // Read under the same linked token as the send: one timer covers the
@@ -136,12 +136,12 @@ internal static class HighHttpTransport
         }
         catch (OperationCanceledException) when (timeoutCts.IsCancellationRequested)
         {
-            config.Logger.Error($"HIGH <- timeout after {config.TimeoutMs}ms {Redaction.RedactUrl(url)}");
+            config.Logger!.Error($"HIGH <- timeout after {config.TimeoutMs}ms {Redaction.RedactUrl(url)}");
             throw new HighApiError($"Request timed out after {config.TimeoutMs}ms", 0);
         }
         catch (HttpRequestException ex)
         {
-            config.Logger.Error($"HIGH <- transport failure {Redaction.RedactUrl(url)}", ex.Message);
+            config.Logger!.Error($"HIGH <- transport failure {Redaction.RedactUrl(url)}", ex.Message);
             throw new HighApiError($"Request failed: {ex.Message}", 0, body: ex.Message);
         }
 
@@ -163,14 +163,14 @@ internal static class HighHttpTransport
         var elapsedMs = (long)(DateTime.UtcNow - startedAt).TotalMilliseconds;
         var envelopeRequestId = !parseFailed ? (parsed as JsonObject)?["requestId"]?.GetValue<string>() : null;
 
-        config.Logger.Debug(
+        config.Logger!.Debug(
             $"HIGH <- {status} in {elapsedMs}ms {Redaction.RedactUrl(url)}",
-            new { requestId = envelopeRequestId, body = Redaction.RedactBody(parseFailed ? Truncate(text) : parsed) });
+            new { requestId = envelopeRequestId, body = Redaction.RedactBody(parseFailed ? (object?)Truncate(text) : parsed) });
 
         if (!response.IsSuccessStatusCode)
         {
             var error = HighApiError.FromResponse(status, parseFailed ? null : parsed, text);
-            config.Logger.Error(
+            config.Logger!.Error(
                 $"HIGH <- {status} {error.Code ?? "no code"} in {elapsedMs}ms {Redaction.RedactUrl(url)}",
                 new { error.RequestId, error.Messages });
             return new Attempt { Status = status, Error = error, RetryAfter = RetryAfterOf(response) };

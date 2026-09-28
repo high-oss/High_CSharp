@@ -50,6 +50,6 @@ public sealed class HighClient : IDisposable
 
     public void Dispose()
     {
-        if (Config.OwnsHttpClient) Config.HttpClient.Dispose();
+        if (Config.OwnsHttpClient) Config.HttpClient?.Dispose();
     }
 }

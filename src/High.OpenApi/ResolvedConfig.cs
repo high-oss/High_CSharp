@@ -42,16 +42,24 @@ public sealed class ResolvedConfig
 
     public required LogLevel LogLevel { get; init; }
 
+    // Not `required`: System.Text.Json still validates required-member
+    // constructability for a JsonIgnore'd property when the type has no
+    // JsonConstructor, so combining `required` with [JsonIgnore] here throws
+    // at first serialization ("marked required but does not specify a
+    // setter") even though the property has an init accessor. ConfigResolver
+    // is the only supported way to build a ResolvedConfig and always sets
+    // these three.
+
     /// <summary>Ready to use; already honours <see cref="LogLevel"/>.</summary>
     [JsonIgnore]
-    public required Logger Logger { get; init; }
+    public Logger? Logger { get; init; }
 
     [JsonIgnore]
-    public required HttpClient HttpClient { get; init; }
+    public HttpClient? HttpClient { get; init; }
 
     /// <summary>True when this client constructed (and therefore owns) its own <see cref="HttpClient"/>.</summary>
     [JsonIgnore]
-    public required bool OwnsHttpClient { get; init; }
+    public bool OwnsHttpClient { get; init; }
 
     /// <summary><c>BaseUrl</c> + <c>VersionPath</c> + operation path, with no doubled or missing slashes.</summary>
     public string BuildUrl(string path)
