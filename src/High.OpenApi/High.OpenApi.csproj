@@ -11,7 +11,7 @@
     <AssemblyName>High.OpenApi</AssemblyName>
     <PackageId>High.OpenApi</PackageId>
     <Version>0.0.1</Version>
-    <Authors>Truestock</Authors>
+    <Authors>High-OSS</Authors>
     <Description>Official .NET SDK for the HIGH Open API.</Description>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
