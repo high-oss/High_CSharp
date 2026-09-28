@@ -70,6 +70,6 @@ public class ConformanceTests
         var dir = new DirectoryInfo(AppContext.BaseDirectory);
         while (dir is not null && dir.GetFiles("*.sln").Length == 0) dir = dir.Parent;
         var lockFile = JsonNode.Parse(File.ReadAllText(Path.Combine(dir!.FullName, "spec.lock.json")))!;
-        Assert.Equal("a3a0c14a9ea57a3295a6329f83c56fcf0ee45db7", lockFile["commit"]!.GetValue<string>());
+        Assert.Equal("339cdc084dd75a952d9d5cc11636c49dd98d00cf", lockFile["commit"]!.GetValue<string>());
     }
 }
