@@ -60,9 +60,9 @@ public sealed class HighClientOptions
     /// <c>Instruments.Stream</c>/<c>List</c> refuse a URL whose host is not in
     /// this set, and refuse a non-<c>https</c> scheme outright — before making
     /// any request. Default: <see cref="Resources.InstrumentsResource.DefaultAllowedHost"/>,
-    /// the CDN host the manifest normally points at.
+    /// the CDN host the instrument list is served from.
     /// </summary>
-    public IReadOnlyCollection<string>? InstrumentManifestAllowedHosts { get; set; }
+    public IReadOnlyCollection<string>? InstrumentsAllowedHosts { get; set; }
 
     /// <summary>
     /// Transport override. Pass an <see cref="HttpClient"/> from

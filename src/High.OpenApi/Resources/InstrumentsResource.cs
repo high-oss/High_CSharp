@@ -29,7 +29,7 @@ public sealed class InstrumentsResource
 {
     /// <summary>
     /// The CDN host the instrument list normally downloads from — the default
-    /// entry of <see cref="HighClientOptions.InstrumentManifestAllowedHosts"/>.
+    /// entry of <see cref="HighClientOptions.InstrumentsAllowedHosts"/>.
     /// </summary>
     public const string DefaultAllowedHost = "high-space.blr1.cdn.digitaloceanspaces.com";
 
@@ -281,12 +281,12 @@ public sealed class InstrumentsResource
                 0);
         }
 
-        if (!_config.InstrumentManifestAllowedHosts.Contains(url.Host))
+        if (!_config.InstrumentsAllowedHosts.Contains(url.Host))
         {
             throw new HighApiError(
                 $"Refusing to download the instrument list from an unexpected host \"{url.Host}\". " +
-                $"Allowed hosts: {string.Join(", ", _config.InstrumentManifestAllowedHosts)}. " +
-                $"Pass {nameof(HighClientOptions.InstrumentManifestAllowedHosts)} to widen this if the host is trusted.",
+                $"Allowed hosts: {string.Join(", ", _config.InstrumentsAllowedHosts)}. " +
+                $"Pass {nameof(HighClientOptions.InstrumentsAllowedHosts)} to widen this if the host is trusted.",
                 0);
         }
 

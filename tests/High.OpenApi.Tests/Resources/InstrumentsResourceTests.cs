@@ -127,7 +127,7 @@ public class InstrumentsResourceTests
             // The fixture CSV lives on the same loopback TestServer as the
             // manifest, so the host allowlist must be widened to admit it —
             // exactly the documented escape hatch for a trusted non-default host.
-            InstrumentManifestAllowedHosts = new[] { "127.0.0.1" },
+            InstrumentsAllowedHosts = new[] { "127.0.0.1" },
         };
         configure?.Invoke(options);
         return new HighClient(options);
@@ -308,7 +308,7 @@ public class InstrumentsResourceTests
         {
             BaseUrl = server.BaseUrl,
             AccessToken = "tok",
-            InstrumentManifestAllowedHosts = new[] { "127.0.0.1" },
+            InstrumentsAllowedHosts = new[] { "127.0.0.1" },
             HttpClient = httpClient,
         });
 

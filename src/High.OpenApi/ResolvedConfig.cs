@@ -42,8 +42,8 @@ public sealed class ResolvedConfig
 
     public required LogLevel LogLevel { get; init; }
 
-    /// <summary>Allowed hosts for the instrument list's downloaded CSV. See <see cref="HighClientOptions.InstrumentManifestAllowedHosts"/>.</summary>
-    public required IReadOnlySet<string> InstrumentManifestAllowedHosts { get; init; }
+    /// <summary>Allowed hosts for the instrument list's downloaded CSV. See <see cref="HighClientOptions.InstrumentsAllowedHosts"/>.</summary>
+    public required IReadOnlySet<string> InstrumentsAllowedHosts { get; init; }
 
     // Not `required`: System.Text.Json still validates required-member
     // constructability for a JsonIgnore'd property when the type has no
