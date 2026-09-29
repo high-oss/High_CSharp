@@ -21,10 +21,18 @@ public sealed class ResolvedConfig
 {
     public required string BaseUrl { get; init; }
 
-    /// <summary>Reserved for the datafeed client. Unused by the REST resources.</summary>
+    /// <summary>The datafeed socket host. Unused by the REST resources — consumed by <see cref="Feed.HighFeed"/>.</summary>
     public required string WsBaseUrl { get; init; }
 
     public required string VersionPath { get; init; }
+
+    /// <summary>
+    /// The environment this config resolved to. <see cref="Feed.HighFeed"/> uses
+    /// it to refuse construction for <see cref="OpenApi.Environment.Sandbox"/> —
+    /// there is no sandbox datafeed — regardless of what <see cref="WsBaseUrl"/>
+    /// happens to be (a test may still override it to point at a local server).
+    /// </summary>
+    public required Environment Environment { get; init; }
 
     [JsonIgnore]
     public string? ApiKey { get; init; }

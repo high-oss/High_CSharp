@@ -29,7 +29,11 @@ public static class Environments
     public static readonly IReadOnlyDictionary<Environment, EnvironmentHosts> Map =
         new Dictionary<Environment, EnvironmentHosts>
         {
-            [Environment.Production] = new EnvironmentHosts("https://openapi.high.live", "wss://openapi.high.live"),
+            // The datafeed is production-only: HighFeed refuses construction
+            // outright when the resolved environment is Sandbox, so the
+            // Sandbox entry's Ws host is never actually dialled — it exists
+            // only so ResolvedConfig always has a well-formed WsBaseUrl.
+            [Environment.Production] = new EnvironmentHosts("https://openapi.high.live", "wss://openapi-feed.high.live"),
             [Environment.Sandbox] = new EnvironmentHosts("https://sandbox.high.live", "wss://sandbox.high.live"),
         };
 

@@ -96,6 +96,7 @@ public static class ConfigResolver
         {
             BaseUrl = TrimTrailingSlashes(baseUrl),
             WsBaseUrl = TrimTrailingSlashes(wsBaseUrl),
+            Environment = environment,
             VersionPath = (options.VersionPath ?? "v1").Trim('/'),
             ApiKey = apiKey,
             AccessToken = accessToken,

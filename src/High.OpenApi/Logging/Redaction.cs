@@ -31,6 +31,10 @@ public static class Redaction
     {
         "tOtp", "totp", "otp", "apiKey", "accessToken", "refreshToken",
         "tokenId", "stepToken", "password", "pin", "authorization",
+        // "sessionid" is the datafeed socket's own auth frame field
+        // ({"type":"cn","sessionid":"<accessToken>"}) — the same bearer
+        // credential under the wire's own name.
+        "sessionid",
     };
 
     /// <summary>Above this, a logged payload is replaced by a note rather than printed.</summary>

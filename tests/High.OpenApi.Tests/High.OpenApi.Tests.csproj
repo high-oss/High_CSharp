@@ -24,6 +24,7 @@
 
   <ItemGroup>
     <None Include="..\..\spec\openapi.json" Link="spec\openapi.json" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="..\..\spec\index-feed-map.json" Link="spec\index-feed-map.json" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
 </Project>

@@ -33,7 +33,7 @@ Console.WriteLine(funds.AvailableBalance);
 |---|---|---|
 | `Environment` | `Production` | `Environment.Production` or `Environment.Sandbox` |
 | `BaseUrl` | from `Environment` | Overrides the REST host |
-| `WsBaseUrl` | from `Environment` | Datafeed socket host, reserved for the feed client |
+| `WsBaseUrl` | from `Environment` | Datafeed socket host, consumed by `HighFeed` (see [Live datafeed](#live-datafeed)) |
 | `VersionPath` | `"v1"` | The segment between host and operation path |
 | `ApiKey` | `HIGH_API_KEY` | Sent as `x-api-key`, for `auth.GenerateAccessToken` |
 | `AccessToken` | `HIGH_ACCESS_TOKEN` | Sent as `Authorization: Bearer` |
@@ -248,8 +248,78 @@ request.
 
 ## Live datafeed
 
-No socket client ships in this release. `WsBaseUrl` is resolved and exposed on
-`HighClient.Config`, but nothing consumes it yet.
+`HighFeed` is a separate client beside `HighClient`, built from the same
+`HighClientOptions` and credentials, over the BCL `ClientWebSocket` — **no new
+dependency**. It is production-only: there is no sandbox feed, and
+constructing one with `Environment.Sandbox` throws immediately rather than
+quietly connecting somewhere unexpected.
+
+```csharp
+using High.OpenApi;
+using High.OpenApi.Feed;
+
+await using var feed = new HighFeed(new HighClientOptions { AccessToken = accessToken });
+await feed.ConnectAsync();
+
+await feed.SubscribeQuotesAsync(new[] { "NSE@2885", "BSE@532540" });
+await feed.SubscribeIndicesAsync(new[] { "NSE@26000" });   // Nifty 50
+
+await foreach (var evt in feed.Events())
+{
+    switch (evt)
+    {
+        case QuoteEvent q: Console.WriteLine($"{q.ScripKey} {q.Quote.LastTradedPrice}"); break;
+        case DepthEvent d: Console.WriteLine($"{d.ScripKey} best bid {d.Depth.Bids[0].Price}"); break;
+        case IndexEvent i: Console.WriteLine($"{i.ScripKey} {i.Index.IndexValue}"); break;
+    }
+}
+```
+
+You subscribe with the same HIGH scrip keys you use everywhere else in this
+SDK — `NSE@2885`, `BSEFO@842150`, and so on. Three independent channels, each
+with its own dedicated methods rather than one method taking a kind, so a
+caller says what they mean and an index key can never end up where only a
+quote or depth subscription belongs:
+
+| Channel | Subscribe | Unsubscribe | Snapshot |
+|---|---|---|---|
+| Quotes | `SubscribeQuotesAsync` | `UnsubscribeQuotesAsync` | `SnapshotQuotesAsync` → `IReadOnlyDictionary<string, Quote>` |
+| Depth (5 levels) | `SubscribeDepthAsync` | `UnsubscribeDepthAsync` | `SnapshotDepthAsync` → `IReadOnlyDictionary<string, FeedDepth>` |
+| Indices | `SubscribeIndicesAsync` | `UnsubscribeIndicesAsync` | `SnapshotIndicesAsync` → `IReadOnlyDictionary<string, IndexQuote>` |
+
+`SubscribeQuotesAsync`/`SubscribeDepthAsync` reject a key the feed treats as
+an index, naming it and pointing at `SubscribeIndicesAsync` instead;
+`SubscribeIndicesAsync` accepts only a key from the committed index table
+(81 entries) and rejects anything else — including the handful of indices
+HIGH lists that the feed itself does not carry, and the 6 scrip-master tokens
+shared by two different indices, which are refused by name rather than
+resolved by a coin-flip — both directions fail loudly at the call rather than
+silently never ticking.
+
+Delivery is both `feed.Events()` (a single `IAsyncEnumerable<FeedEvent>`,
+ordered) and the `OnQuote`/`OnDepth`/`OnIndex` events, whichever idiom your
+caller prefers — the same ticks reach both. The feed's own ticks are deltas;
+`HighFeed` merges them for you; every `Quote`/`FeedDepth`/`IndexQuote` is
+always a **complete** snapshot, and each event's `ChangedFields` names exactly
+what this particular tick moved. A full market-watch tick carries quote data
+and top-of-book together on the wire, and this SDK splits that into a
+`QuoteEvent` and a one-level `DepthEvent` — `FeedDepth.Source` and
+`LevelCount` tell you whether a book is that one-level top-of-book or the
+full five-level `SubscribeDepthAsync` book, so the two are never presented as
+the same shape.
+
+On a transport failure, `HighFeed` reconnects with backoff, re-authenticates,
+and resubscribes everything you had subscribed before it raises
+`OnReconnected` — you do not need to remember your own subscriptions across a
+blip. An auth rejection (`HighFeedAuthError`, carrying the server's own
+`StCode`/`ServerMessage` plus a classified `Reason` such as
+`MissingDataPlan` or `InvalidToken`) is **never** retried or reconnected —
+the server will keep refusing, so `HighFeed` surfaces it once and stops.
+
+Prices are decimal strings on the wire and are parsed to `decimal`, never a
+binary float. Every model also carries an `Extra` dictionary for wire fields
+this SDK does not (yet) name, so a future vendor addition still reaches you
+instead of vanishing.
 
 ## Regenerating from the spec
 

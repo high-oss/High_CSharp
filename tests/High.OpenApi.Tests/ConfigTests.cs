@@ -23,7 +23,7 @@ public class ConfigTests
         var config = ConfigResolver.Resolve(new HighClientOptions(), NoEnv);
 
         Assert.Equal("https://openapi.high.live", config.BaseUrl);
-        Assert.Equal("wss://openapi.high.live", config.WsBaseUrl);
+        Assert.Equal("wss://openapi-feed.high.live", config.WsBaseUrl);
         Assert.Equal("v1", config.VersionPath);
         Assert.Equal(30_000, config.TimeoutMs);
         Assert.Equal(2, config.MaxRetries);
