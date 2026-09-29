@@ -70,6 +70,29 @@ public class ConformanceTests
         var dir = new DirectoryInfo(AppContext.BaseDirectory);
         while (dir is not null && dir.GetFiles("*.sln").Length == 0) dir = dir.Parent;
         var lockFile = JsonNode.Parse(File.ReadAllText(Path.Combine(dir!.FullName, "spec.lock.json")))!;
-        Assert.Equal("339cdc084dd75a952d9d5cc11636c49dd98d00cf", lockFile["commit"]!.GetValue<string>());
+        Assert.Equal("97cc3af3df39c0252b55306d9ce56accdad65c02", lockFile["commit"]!.GetValue<string>());
+    }
+
+    [Fact]
+    public void InstrumentCategory_enum_matches_the_pinned_specs_InstrumentFile_schema()
+    {
+        var fromSpec = Spec()["components"]!["schemas"]!["InstrumentFile"]!["properties"]!["instrument"]!["enum"]!
+            .AsArray().Select(v => v!.GetValue<string>()).OrderBy(s => s).ToList();
+
+        var fromCode = Enum.GetValues<InstrumentCategory>()
+            .Select(v => JsonSerializer.Serialize(v, High.OpenApi.Json.HighJsonOptions.Default).Trim('"'))
+            .OrderBy(s => s)
+            .ToList();
+
+        Assert.Equal(fromSpec, fromCode);
+    }
+
+    [Fact]
+    public void InstrumentsManifest_columns_example_has_exactly_17_entries_matching_the_scrip_master_header()
+    {
+        var columns = Spec()["components"]!["schemas"]!["InstrumentsManifest"]!["properties"]!["columns"]!["example"]!
+            .AsArray().Select(v => v!.GetValue<string>()).ToList();
+
+        Assert.Equal(17, columns.Count);
     }
 }

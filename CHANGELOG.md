@@ -12,6 +12,12 @@ First release. Pre-1.0: the surface may still change.
 
 - `HighClient` covering 24 of the 27 HIGH Open API operations across five
   resources: `Auth`, `Orders`, `Portfolio`, `Scrips` and `Market`.
+- `Instruments.Stream` (an `IAsyncEnumerable<Instrument>`, streamed without
+  buffering the whole file) and `Instruments.List` (a materialised
+  `IReadOnlyList<Instrument>`), for one of five categories (`All`, `Equity`,
+  `Derivatives`, `Commodity`, `Etfs`) of the instrument list — a 17-column CSV
+  of every scrip HIGH knows. Needs no credentials. Blank fields come back as
+  `null`; `StrikePrice` is a `decimal?`; `PriceTick` is never rescaled.
 - Hand-written models (`src/High.OpenApi/Models`) checked field-by-field
   against the canonical OpenAPI contract, pinned by commit in
   `spec.lock.json`, with a vendored `spec/openapi.json` and a conformance

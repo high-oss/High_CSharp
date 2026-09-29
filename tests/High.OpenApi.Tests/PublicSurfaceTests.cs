@@ -23,6 +23,24 @@ public class PublicSurfaceTests
     }
 
     [Fact]
+    public void Exposes_the_instruments_resource_with_exactly_a_streaming_and_an_eager_form()
+    {
+        using var client = new HighClient(new HighClientOptions { AccessToken = "tok" });
+        Assert.NotNull(client.Instruments);
+
+        // Not part of the 24-operation shared contract counted below: the
+        // instrument list is resolved through an internal manifest, not a
+        // directly wrapped REST operation, so it is asserted on its own.
+        var publicMethodNames = typeof(InstrumentsResource)
+            .GetMethods(BindingFlags.Public | BindingFlags.Instance)
+            .Where(m => m.DeclaringType == typeof(InstrumentsResource))
+            .Select(m => m.Name)
+            .ToHashSet();
+
+        Assert.Equal(new HashSet<string> { "Stream", "List" }, publicMethodNames);
+    }
+
+    [Fact]
     public void Exposes_every_operation_the_SDK_covers_as_a_public_method()
     {
         var expected = new Dictionary<Type, string[]>

@@ -56,6 +56,15 @@ public sealed class HighClientOptions
     public ILogSink? LogSink { get; set; }
 
     /// <summary>
+    /// Hosts the instrument list's downloaded CSV is allowed to come from.
+    /// <c>Instruments.Stream</c>/<c>List</c> refuse a URL whose host is not in
+    /// this set, and refuse a non-<c>https</c> scheme outright — before making
+    /// any request. Default: <see cref="Resources.InstrumentsResource.DefaultAllowedHost"/>,
+    /// the CDN host the manifest normally points at.
+    /// </summary>
+    public IReadOnlyCollection<string>? InstrumentManifestAllowedHosts { get; set; }
+
+    /// <summary>
     /// Transport override. Pass an <see cref="HttpClient"/> from
     /// <c>IHttpClientFactory</c>, a test double, or a proxy-aware client. When
     /// omitted, the SDK creates and owns its own.

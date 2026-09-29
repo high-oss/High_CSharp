@@ -197,13 +197,17 @@ internal static class HighHttpTransport
         request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
         request.Headers.UserAgent.ParseAdd(config.UserAgent);
 
-        if (options.Auth == AuthKind.Bearer)
+        switch (options.Auth)
         {
-            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", config.AccessToken);
-        }
-        else
-        {
-            request.Headers.Add("x-api-key", config.ApiKey);
+            case AuthKind.Bearer:
+                request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", config.AccessToken);
+                break;
+            case AuthKind.ApiKey:
+                request.Headers.Add("x-api-key", config.ApiKey);
+                break;
+            case AuthKind.None:
+                // Deliberately no Authorization / x-api-key header at all.
+                break;
         }
 
         if (options.Body is not null)

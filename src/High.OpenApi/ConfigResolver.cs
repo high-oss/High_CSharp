@@ -88,6 +88,10 @@ public static class ConfigResolver
         var apiKey = options.ApiKey ?? env("HIGH_API_KEY");
         var accessToken = options.AccessToken ?? env("HIGH_ACCESS_TOKEN");
 
+        var instrumentManifestAllowedHosts = options.InstrumentManifestAllowedHosts is { Count: > 0 } allowedHosts
+            ? new HashSet<string>(allowedHosts, StringComparer.OrdinalIgnoreCase)
+            : new HashSet<string>(StringComparer.OrdinalIgnoreCase) { Resources.InstrumentsResource.DefaultAllowedHost };
+
         return new ResolvedConfig
         {
             BaseUrl = TrimTrailingSlashes(baseUrl),
@@ -100,6 +104,7 @@ public static class ConfigResolver
             MaxRetryDelayMs = maxRetryDelayMs,
             UserAgent = userAgent,
             LogLevel = logLevel,
+            InstrumentManifestAllowedHosts = instrumentManifestAllowedHosts,
             Logger = new Logger(logLevel, options.LogSink),
             HttpClient = httpClient,
             OwnsHttpClient = ownsHttpClient,

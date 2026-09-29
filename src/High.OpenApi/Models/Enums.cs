@@ -137,6 +137,23 @@ public enum ExpiryFrequency
     [EnumMember(Value = "W")] Weekly,
 }
 
+/// <summary>
+/// Which category of the instrument list (the scrip master) to read:
+/// <c>instruments.Stream</c> and <c>instruments.List</c> both take one. Taken
+/// from the spec's own <c>InstrumentFile.instrument</c> enum, so widening it
+/// to <see cref="string"/> would let a category the manifest cannot serve
+/// compile.
+/// </summary>
+[JsonConverter(typeof(SpecEnumConverter<InstrumentCategory>))]
+public enum InstrumentCategory
+{
+    [EnumMember(Value = "all")] All,
+    [EnumMember(Value = "equity")] Equity,
+    [EnumMember(Value = "derivatives")] Derivatives,
+    [EnumMember(Value = "commodity")] Commodity,
+    [EnumMember(Value = "etfs")] Etfs,
+}
+
 /// <summary>Candle length for <c>scrips.Historical</c>. 3M, 6M and 1Y bypass the broker's usual translation and may come back empty — build them from 1M candles instead.</summary>
 [JsonConverter(typeof(SpecEnumConverter<HistoricalInterval>))]
 public enum HistoricalInterval

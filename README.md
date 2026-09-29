@@ -216,6 +216,36 @@ Every spec enum is a real C# enum — `TradeSide`, `Flavor`, `ProductType`,
 `[EnumMember]` attribute. None of them is widened to a plain `string` in a
 public method signature.
 
+## Instrument list
+
+`high.Instruments` reads the instrument list — every scrip HIGH knows, as a
+17-column CSV — for one of five categories: `All`, `Equity`, `Derivatives`,
+`Commodity`, `Etfs`. It needs no credentials at all.
+
+```csharp
+// Streaming is the primary form: All and Derivatives are 14 MB and 11 MB,
+// so this never buffers the whole file.
+await foreach (var instrument in high.Instruments.Stream(InstrumentCategory.Equity))
+{
+    Console.WriteLine($"{instrument.TradingSymbol} {instrument.Name}");
+}
+
+// A materialised alternative for smaller categories.
+var etfs = await high.Instruments.List(InstrumentCategory.Etfs);
+```
+
+Each `Instrument` carries the same 17 columns: `Exchange`, `Segment`,
+`InstrumentType`, `TradingSymbol`, `ScripKey`, `Isin`, `ScripCode`, `Symbol`,
+`Name`, `GroupSeries`, `HasFnO`, `UnderlyingSymbol`, `Expiry`, `OptionType`,
+`StrikePrice`, `PriceTick` and `LotSize`. A blank CSV field comes back as
+`null`, never an empty string. `StrikePrice` is a `decimal?` (it is money);
+`Expiry` is a `DateOnly?`. `PriceTick` is never rescaled — its meaning varies
+by segment, so it is passed through exactly as published.
+
+The list is rebuilt once each trading morning and does not change intraday:
+download it once a day and cache it yourself rather than re-fetching per
+request.
+
 ## Live datafeed
 
 No socket client ships in this release. `WsBaseUrl` is resolved and exposed on

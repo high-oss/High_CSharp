@@ -34,6 +34,7 @@ public sealed class HighClient : IDisposable
     public OrdersResource Orders { get; }
     public PortfolioResource Portfolio { get; }
     public ScripsResource Scrips { get; }
+    public InstrumentsResource Instruments { get; }
 
     public HighClient(HighClientOptions? options = null)
     {
@@ -43,6 +44,7 @@ public sealed class HighClient : IDisposable
         Orders = new OrdersResource(Config);
         Portfolio = new PortfolioResource(Config);
         Scrips = new ScripsResource(Config);
+        Instruments = new InstrumentsResource(Config);
     }
 
     /// <summary>Never prints credentials — delegates to <see cref="ResolvedConfig.ToString"/>.</summary>
