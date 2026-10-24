@@ -215,6 +215,30 @@ var today = await high.Scrips.IntradayAsync(new IntradayRequest
 // Order.Error is nullable, and Order.TradingSymbol may be null when the
 // instrument is not in the local master. An option leg may have every
 // property null (an empty object on the wire) and its Touchline may be null.
+
+// A stop-loss and a target are PATCHes on an open position. No quantity is
+// sent: the exit order is sized from the live position. Both need a static IP,
+// and both are never retried. The prices must suit the side of the position:
+// a stop-loss trigger below LTP and a target above it for a long position,
+// the reverse for a short.
+var stoploss = await high.Portfolio.SetStoplossAsync(new SetStoplossRequest
+{
+    TradingSymbol = "RELIANCE-EQ",
+    Flavor = Flavor.Regular,
+    ProductType = ExitProductType.Intraday,
+    TriggerPrice = 1350,
+});
+stoploss.Action;      // RiskOrderAction.Placed, or Modified for an existing exit order
+stoploss.OrderId;     // broker id of the exit order
+stoploss.LimitPrice;  // double?: the limit a triggered stop-loss is sent at
+
+var target = await high.Portfolio.SetTargetAsync(new SetTargetRequest
+{
+    TradingSymbol = "RELIANCE-EQ",
+    Flavor = Flavor.Regular,
+    ProductType = ExitProductType.Intraday,
+    TargetPrice = 1450,
+});
 ```
 
 Every spec enum is a real C# enum — `TradeSide`, `Flavor`, `ProductType`,
