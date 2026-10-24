@@ -68,7 +68,6 @@ public sealed record ScripInfo
     [JsonPropertyName("segment")] public required string Segment { get; init; }
 
     [JsonPropertyName("scripKey")] public required string ScripKey { get; init; }
-    [JsonPropertyName("logo")] public string? Logo { get; init; }
     [JsonPropertyName("symbol")] public required string Symbol { get; init; }
 
     /// <summary>Derivatives only.</summary>

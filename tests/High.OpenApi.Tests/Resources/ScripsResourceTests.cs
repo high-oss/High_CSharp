@@ -132,4 +132,74 @@ public class ScripsResourceTests
         Assert.Null(row.Put.ScripKey);
         Assert.Null(row.Put.Token);
     }
+
+    [Fact]
+    public async Task Historical_can_name_the_instrument_by_segment_and_scrip_code_instead_of_trading_symbol()
+    {
+        using var server = new TestServer((ctx, _) => TestServerResponses.EnvelopeAsync(ctx, 200, "r", """
+            {"tradingSymbol":"NSE@2885","interval":"1D","timestamp":[1789929000],
+             "open":[1400],"high":[1420],"low":[1395],"close":[1412],"volume":[100]}
+            """));
+        using var client = ClientFor(server);
+
+        var candles = await client.Scrips.Historical(new HistoricalRequest
+        {
+            ExchangeSegment = ExchangeSegment.Nse, ScripCode = "2885",
+            Interval = HistoricalInterval.OneDay, FromTime = 1789929000, ToTime = 1790330400,
+        });
+
+        Assert.Equal(1412, Assert.Single(candles.Close));
+        var sent = JsonDocument.Parse(server.Requests[0].Body).RootElement;
+        Assert.Equal("NSE", sent.GetProperty("exchangeSegment").GetString());
+        Assert.Equal("2885", sent.GetProperty("scripCode").GetString());
+        Assert.False(sent.TryGetProperty("tradingSymbol", out _));
+    }
+
+    [Fact]
+    public async Task Intraday_posts_to_the_intraday_path_and_returns_columnar_candles()
+    {
+        using var server = new TestServer((ctx, _) => TestServerResponses.EnvelopeAsync(ctx, 200, "r", """
+            {"tradingSymbol":"NSE@2885","interval":"5m","timestamp":[1790308500,1790308800],
+             "open":[1408.2,1409.4],"high":[1410.3,1411.2],"low":[1407.6,1408.9],
+             "close":[1409.4,1410.1],"volume":[184320,152110]}
+            """));
+        using var client = ClientFor(server);
+
+        var candles = await client.Scrips.IntradayAsync(new IntradayRequest
+        {
+            TradingSymbol = "RELIANCE-EQ", Interval = IntradayInterval.FiveMinutes,
+        });
+
+        Assert.Equal(2, candles.Close.Count);
+        Assert.Equal(1410.1, candles.Close[1]);
+        Assert.Equal("POST", server.Requests[0].Method);
+        Assert.Equal("/v1/scrips/intraday", server.Requests[0].Url);
+
+        var sent = JsonDocument.Parse(server.Requests[0].Body).RootElement;
+        Assert.Equal("RELIANCE-EQ", sent.GetProperty("tradingSymbol").GetString());
+        Assert.Equal("5m", sent.GetProperty("interval").GetString());
+        Assert.False(sent.TryGetProperty("exchangeSegment", out _));
+        Assert.False(sent.TryGetProperty("scripCode", out _));
+    }
+
+    [Fact]
+    public async Task Intraday_can_name_the_instrument_by_segment_and_scrip_code()
+    {
+        using var server = new TestServer((ctx, _) => TestServerResponses.EnvelopeAsync(ctx, 200, "r", """
+            {"tradingSymbol":"NSE@2885","interval":"1h","timestamp":[1790308500],
+             "open":[1408.2],"high":[1410.3],"low":[1407.6],"close":[1409.4],"volume":[184320]}
+            """));
+        using var client = ClientFor(server);
+
+        await client.Scrips.IntradayAsync(new IntradayRequest
+        {
+            ExchangeSegment = ExchangeSegment.Nse, ScripCode = "2885", Interval = IntradayInterval.OneHour,
+        });
+
+        var sent = JsonDocument.Parse(server.Requests[0].Body).RootElement;
+        Assert.Equal("NSE", sent.GetProperty("exchangeSegment").GetString());
+        Assert.Equal("2885", sent.GetProperty("scripCode").GetString());
+        Assert.Equal("1h", sent.GetProperty("interval").GetString());
+        Assert.False(sent.TryGetProperty("tradingSymbol", out _));
+    }
 }

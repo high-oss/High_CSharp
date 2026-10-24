@@ -142,6 +142,38 @@ public sealed record PositionExitAllResult
     [JsonPropertyName("positions")] public required IReadOnlyList<PositionExitResult> Positions { get; init; }
 }
 
+/// <summary>
+/// One stop-loss or target exit order, placed new or amended in place.
+/// <see cref="Quantity"/> is what the order actually covers after clamping to the live position.
+/// </summary>
+public sealed record PositionRiskOrderResult
+{
+    [JsonPropertyName("tradingSymbol")] public required string TradingSymbol { get; init; }
+    [JsonPropertyName("exchangeSegment")] public required string ExchangeSegment { get; init; }
+    [JsonPropertyName("scripCode")] public required string ScripCode { get; init; }
+
+    /// <summary>Which exit leg was set.</summary>
+    [JsonPropertyName("leg")] public required RiskOrderLeg Leg { get; init; }
+
+    /// <summary>Whether a new exit order was placed or an existing one amended.</summary>
+    [JsonPropertyName("action")] public required RiskOrderAction Action { get; init; }
+
+    [JsonPropertyName("flavor")] public required Flavor Flavor { get; init; }
+
+    /// <summary>Broker order id of the exit order. Empty for BO/CO, whose modify endpoint returns no id.</summary>
+    [JsonPropertyName("orderId")] public required string OrderId { get; init; }
+
+    [JsonPropertyName("quantity")] public required long Quantity { get; init; }
+
+    /// <summary>Trigger price for a stop-loss, limit price for a target.</summary>
+    [JsonPropertyName("price")] public required double Price { get; init; }
+
+    /// <summary>Limit price a stop-loss is sent at once triggered: one tick past the trigger. Same as <see cref="Price"/> for a target.</summary>
+    [JsonPropertyName("limitPrice")] public double? LimitPrice { get; init; }
+
+    [JsonPropertyName("isSubmitted")] public required bool IsSubmitted { get; init; }
+}
+
 // ---- Request bodies -------------------------------------------------------
 
 /// <summary>Body of <c>PATCH /portfolio/positions/convert</c> (<c>portfolio.ConvertPosition</c>).</summary>
@@ -180,4 +212,44 @@ public sealed record ExitPositionRequest
 
     /// <summary>Flavor of the original position. Only REGULAR/BO/CO — no GTT.</summary>
     [JsonPropertyName("flavor")] public required ExitFlavor Flavor { get; init; }
+}
+
+/// <summary>Body of <c>PATCH /portfolio/positions/stoploss</c> (<c>portfolio.SetStoplossAsync</c>). Needs a static IP.</summary>
+public sealed record SetStoplossRequest
+{
+    [JsonPropertyName("tradingSymbol")] public string? TradingSymbol { get; init; }
+    [JsonPropertyName("exchangeSegment")] public ExchangeSegment? ExchangeSegment { get; init; }
+    [JsonPropertyName("scripCode")] public string? ScripCode { get; init; }
+
+    /// <summary>Flavor the exit order is placed under. BO/CO amend the position's own leg and must match the flavor the position reports.</summary>
+    [JsonPropertyName("flavor")] public required Flavor Flavor { get; init; }
+
+    /// <summary>Product type of the open position.</summary>
+    [JsonPropertyName("productType")] public required ExitProductType ProductType { get; init; }
+
+    /// <summary>Existing exit order to modify. Only needed when more than one live exit order matches the position.</summary>
+    [JsonPropertyName("orderId")] public string? OrderId { get; init; }
+
+    /// <summary>Stop-loss trigger price. Must be below LTP for a long position, above it for a short.</summary>
+    [JsonPropertyName("triggerPrice")] public required double TriggerPrice { get; init; }
+}
+
+/// <summary>Body of <c>PATCH /portfolio/positions/target</c> (<c>portfolio.SetTargetAsync</c>). Needs a static IP.</summary>
+public sealed record SetTargetRequest
+{
+    [JsonPropertyName("tradingSymbol")] public string? TradingSymbol { get; init; }
+    [JsonPropertyName("exchangeSegment")] public ExchangeSegment? ExchangeSegment { get; init; }
+    [JsonPropertyName("scripCode")] public string? ScripCode { get; init; }
+
+    /// <summary>Flavor the exit order is placed under. BO/CO amend the position's own leg and must match the flavor the position reports.</summary>
+    [JsonPropertyName("flavor")] public required Flavor Flavor { get; init; }
+
+    /// <summary>Product type of the open position.</summary>
+    [JsonPropertyName("productType")] public required ExitProductType ProductType { get; init; }
+
+    /// <summary>Existing exit order to modify. Only needed when more than one live exit order matches the position.</summary>
+    [JsonPropertyName("orderId")] public string? OrderId { get; init; }
+
+    /// <summary>Target limit price. Must be above LTP for a long position, below it for a short.</summary>
+    [JsonPropertyName("targetPrice")] public required double TargetPrice { get; init; }
 }

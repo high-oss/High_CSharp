@@ -70,7 +70,7 @@ public class ConformanceTests
         var dir = new DirectoryInfo(AppContext.BaseDirectory);
         while (dir is not null && dir.GetFiles("*.sln").Length == 0) dir = dir.Parent;
         var lockFile = JsonNode.Parse(File.ReadAllText(Path.Combine(dir!.FullName, "spec.lock.json")))!;
-        Assert.Equal("97cc3af3df39c0252b55306d9ce56accdad65c02", lockFile["commit"]!.GetValue<string>());
+        Assert.Equal("c1f37de4ec27245288ef9c9f83699c51f29b3b50", lockFile["commit"]!.GetValue<string>());
     }
 
     [Fact]
@@ -94,5 +94,39 @@ public class ConformanceTests
             .AsArray().Select(v => v!.GetValue<string>()).ToList();
 
         Assert.Equal(17, columns.Count);
+    }
+
+    [Fact]
+    public void IntradayInterval_enum_matches_the_pinned_specs_intraday_interval_enum()
+    {
+        var fromSpec = Spec()["paths"]!["/scrips/intraday"]!["post"]!["requestBody"]!["content"]!["application/json"]!["schema"]!
+            ["properties"]!["interval"]!["enum"]!.AsArray().Select(v => v!.GetValue<string>()).OrderBy(s => s).ToList();
+
+        var fromCode = Enum.GetValues<IntradayInterval>()
+            .Select(v => JsonSerializer.Serialize(v, High.OpenApi.Json.HighJsonOptions.Default).Trim('"'))
+            .OrderBy(s => s)
+            .ToList();
+
+        Assert.Equal(fromSpec, fromCode);
+    }
+
+    [Fact]
+    public void RiskOrderLeg_and_RiskOrderAction_enums_match_the_pinned_specs_PositionRiskOrderResult()
+    {
+        var properties = Spec()["components"]!["schemas"]!["PositionRiskOrderResult"]!["properties"]!;
+
+        var legFromSpec = properties["leg"]!["enum"]!.AsArray().Select(v => v!.GetValue<string>()).OrderBy(s => s).ToList();
+        var legFromCode = Enum.GetValues<RiskOrderLeg>()
+            .Select(v => JsonSerializer.Serialize(v, High.OpenApi.Json.HighJsonOptions.Default).Trim('"'))
+            .OrderBy(s => s)
+            .ToList();
+        Assert.Equal(legFromSpec, legFromCode);
+
+        var actionFromSpec = properties["action"]!["enum"]!.AsArray().Select(v => v!.GetValue<string>()).OrderBy(s => s).ToList();
+        var actionFromCode = Enum.GetValues<RiskOrderAction>()
+            .Select(v => JsonSerializer.Serialize(v, High.OpenApi.Json.HighJsonOptions.Default).Trim('"'))
+            .OrderBy(s => s)
+            .ToList();
+        Assert.Equal(actionFromSpec, actionFromCode);
     }
 }

@@ -168,14 +168,14 @@ await high.Scrips.Quotes(new QuotesRequest { Symbols = new[] { "RELIANCE-EQ" } }
 
 ## Resources
 
-24 operations across five namespaces.
+27 operations across five namespaces.
 
 | Namespace | Methods |
 |---|---|
 | `Auth` | `GenerateAccessToken` |
 | `Orders` | `Place` · `Modify` · `Get` · `Cancel` · `List` · `Trades` · `TradesFor` · `Charges` · `Margin` |
-| `Portfolio` | `Positions` · `Holdings` · `Funds` · `ConvertPosition` · `ExitAllPositions` · `ExitPosition` |
-| `Scrips` | `Quotes` · `Ohlc` · `Depth` · `Expiries` · `FutureData` · `Historical` · `OptionChain` |
+| `Portfolio` | `Positions` · `Holdings` · `Funds` · `ConvertPosition` · `SetStoplossAsync` · `SetTargetAsync` · `ExitAllPositions` · `ExitPosition` |
+| `Scrips` | `Quotes` · `Ohlc` · `Depth` · `Expiries` · `FutureData` · `Historical` · `IntradayAsync` · `OptionChain` |
 | `Market` | `Status` |
 
 Each method returns the response's `data` — the `{requestId, data}` envelope
@@ -198,6 +198,15 @@ var candles = await high.Scrips.Historical(new HistoricalRequest
 });
 candles.Close[0];             // not candles[0].Close
 
+// Historical and IntradayAsync name the instrument by TradingSymbol, or by
+// ExchangeSegment + ScripCode instead. IntradayAsync covers the last trading session.
+var today = await high.Scrips.IntradayAsync(new IntradayRequest
+{
+    ExchangeSegment = ExchangeSegment.Nse,
+    ScripCode = "2885",
+    Interval = IntradayInterval.FiveMinutes,
+});
+
 // Positions and Holdings both have a Snapshot, with DIFFERENT shapes.
 (await high.Portfolio.Positions()).Snapshot.TotalPl;      // PnlSnapshot
 (await high.Portfolio.Holdings()).Snapshot.Investment;    // InvestmentSnapshot
@@ -210,8 +219,10 @@ candles.Close[0];             // not candles[0].Close
 
 Every spec enum is a real C# enum — `TradeSide`, `Flavor`, `ProductType`,
 `OrderTypeEnum`, `Validity`, `ExchangeSegment`, `ExpiryType`, `ExpiryFrequency`,
-`HistoricalInterval`, and the narrower `ExitFlavor`/`ExitProductType` that
-`Portfolio.ExitPosition` alone accepts — serialised through a shared
+`HistoricalInterval`, `IntradayInterval`, `RiskOrderLeg`, `RiskOrderAction`, and
+the narrower `ExitFlavor` (which `Portfolio.ExitPosition` alone accepts, with no
+`GTT`) and `ExitProductType` (no `MTF`, shared by `ExitPosition`,
+`SetStoplossAsync` and `SetTargetAsync`) — serialised through a shared
 `SpecEnumConverter<T>` that reads the exact wire string from each member's
 `[EnumMember]` attribute. None of them is widened to a plain `string` in a
 public method signature.

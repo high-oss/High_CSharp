@@ -59,7 +59,7 @@ public enum ProductType
     [EnumMember(Value = "MTF")] Mtf,
 }
 
-/// <summary>The 2-value product type <c>ExitPositionRequest.productType</c> accepts: no <c>MTF</c>.</summary>
+/// <summary>The 2-value product type <c>ExitPositionRequest.productType</c>, <c>SetStoplossRequest</c> and <c>SetTargetRequest</c> accept: no <c>MTF</c>.</summary>
 [JsonConverter(typeof(SpecEnumConverter<ExitProductType>))]
 public enum ExitProductType
 {
@@ -177,4 +177,39 @@ public enum HistoricalInterval
     [EnumMember(Value = "3M")] ThreeMonths,
     [EnumMember(Value = "6M")] SixMonths,
     [EnumMember(Value = "1Y")] OneYear,
+}
+
+/// <summary>Candle length for <c>scrips.Intraday</c>: minutes and hours only, since the window is one trading session.</summary>
+[JsonConverter(typeof(SpecEnumConverter<IntradayInterval>))]
+public enum IntradayInterval
+{
+    [EnumMember(Value = "1m")] OneMinute,
+    [EnumMember(Value = "2m")] TwoMinutes,
+    [EnumMember(Value = "3m")] ThreeMinutes,
+    [EnumMember(Value = "4m")] FourMinutes,
+    [EnumMember(Value = "5m")] FiveMinutes,
+    [EnumMember(Value = "10m")] TenMinutes,
+    [EnumMember(Value = "15m")] FifteenMinutes,
+    [EnumMember(Value = "30m")] ThirtyMinutes,
+    [EnumMember(Value = "45m")] FortyFiveMinutes,
+    [EnumMember(Value = "1h")] OneHour,
+    [EnumMember(Value = "2h")] TwoHours,
+    [EnumMember(Value = "3h")] ThreeHours,
+    [EnumMember(Value = "4h")] FourHours,
+}
+
+/// <summary>Which exit leg a <c>PositionRiskOrderResult</c> reports as set.</summary>
+[JsonConverter(typeof(SpecEnumConverter<RiskOrderLeg>))]
+public enum RiskOrderLeg
+{
+    [EnumMember(Value = "STOPLOSS")] StopLoss,
+    [EnumMember(Value = "TARGET")] Target,
+}
+
+/// <summary>Whether a <c>PositionRiskOrderResult</c> placed a new exit order or amended an existing one.</summary>
+[JsonConverter(typeof(SpecEnumConverter<RiskOrderAction>))]
+public enum RiskOrderAction
+{
+    [EnumMember(Value = "PLACED")] Placed,
+    [EnumMember(Value = "MODIFIED")] Modified,
 }

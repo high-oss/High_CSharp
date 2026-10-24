@@ -36,6 +36,18 @@ public sealed class PortfolioResource
             new RequestOptions { Method = HttpMethod.Patch, Path = "/portfolio/positions/convert", Auth = AuthKind.Bearer, Body = body },
             cancellationToken);
 
+    /// <summary>Places or amends a stop-loss exit on an open position. Needs a static IP. Never retried.</summary>
+    public Task<PositionRiskOrderResult> SetStoplossAsync(SetStoplossRequest body, CancellationToken cancellationToken = default) =>
+        HighHttpTransport.SendAsync<PositionRiskOrderResult>(_config,
+            new RequestOptions { Method = HttpMethod.Patch, Path = "/portfolio/positions/stoploss", Auth = AuthKind.Bearer, Body = body },
+            cancellationToken);
+
+    /// <summary>Places or amends a target exit on an open position. Needs a static IP. Never retried.</summary>
+    public Task<PositionRiskOrderResult> SetTargetAsync(SetTargetRequest body, CancellationToken cancellationToken = default) =>
+        HighHttpTransport.SendAsync<PositionRiskOrderResult>(_config,
+            new RequestOptions { Method = HttpMethod.Patch, Path = "/portfolio/positions/target", Auth = AuthKind.Bearer, Body = body },
+            cancellationToken);
+
     /// <summary>Squares off every open position. Never retried.</summary>
     public Task<PositionExitAllResult> ExitAllPositions(CancellationToken cancellationToken = default) =>
         HighHttpTransport.SendAsync<PositionExitAllResult>(_config,

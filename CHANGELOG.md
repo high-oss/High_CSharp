@@ -4,6 +4,38 @@ All notable changes to this package are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.0] — 2026-10-24
+
+Spec pin moved to `c1f37de`, and the vendored `spec/openapi.json` refreshed to
+match.
+
+### Added
+
+- `Scrips.IntradayAsync` (`POST /scrips/intraday`): OHLCV candles of the most
+  recent trading session, over `IntradayRequest` and `IntradayInterval`
+  (`1m` to `4h`). Returns `HistoricalCandles`. Needs a data plan.
+- `Portfolio.SetStoplossAsync` (`PATCH /portfolio/positions/stoploss`) and
+  `Portfolio.SetTargetAsync` (`PATCH /portfolio/positions/target`): place or
+  amend a stop-loss or target exit on an open position, over
+  `SetStoplossRequest` and `SetTargetRequest`. Both return the new
+  `PositionRiskOrderResult`, with `RiskOrderLeg` and `RiskOrderAction`. Quantity
+  comes from the live position. Writes, so never retried, and they need a
+  static IP.
+- `HistoricalRequest` accepts `ExchangeSegment` and `ScripCode` as an
+  alternative to `TradingSymbol`.
+
+### Changed
+
+- `HighClient` covers 27 operations, up from 24.
+- `HistoricalRequest.TradingSymbol` is now optional. Name the instrument by
+  `TradingSymbol`, or by `ExchangeSegment` with `ScripCode`. Existing callers
+  compile unchanged.
+
+### Removed
+
+- `ScripInfo.Logo`. The spec no longer returns logos. Code that reads the
+  property will not compile.
+
 ## [0.0.1] — 2026-09-29
 
 First release. Pre-1.0: the surface may still change.

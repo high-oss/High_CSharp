@@ -28,7 +28,7 @@ public class PublicSurfaceTests
         using var client = new HighClient(new HighClientOptions { AccessToken = "tok" });
         Assert.NotNull(client.Instruments);
 
-        // Not part of the 24-operation shared contract counted below: the
+        // Not part of the 27-operation shared contract counted below: the
         // instrument list is resolved through an internal manifest, not a
         // directly wrapped REST operation, so it is asserted on its own.
         var publicMethodNames = typeof(InstrumentsResource)
@@ -47,8 +47,8 @@ public class PublicSurfaceTests
         {
             [typeof(AuthResource)] = new[] { "GenerateAccessToken" },
             [typeof(OrdersResource)] = new[] { "Place", "Modify", "Get", "Cancel", "List", "Trades", "TradesFor", "Charges", "Margin" },
-            [typeof(PortfolioResource)] = new[] { "Positions", "Holdings", "Funds", "ConvertPosition", "ExitAllPositions", "ExitPosition" },
-            [typeof(ScripsResource)] = new[] { "Quotes", "Ohlc", "Depth", "Expiries", "FutureData", "Historical", "OptionChain" },
+            [typeof(PortfolioResource)] = new[] { "Positions", "Holdings", "Funds", "ConvertPosition", "SetStoplossAsync", "SetTargetAsync", "ExitAllPositions", "ExitPosition" },
+            [typeof(ScripsResource)] = new[] { "Quotes", "Ohlc", "Depth", "Expiries", "FutureData", "Historical", "IntradayAsync", "OptionChain" },
             [typeof(MarketResource)] = new[] { "Status" },
         };
 
@@ -67,9 +67,9 @@ public class PublicSurfaceTests
             }
         }
 
-        // The spec has 27 operations; the SDK covers 24 — login, the two
-        // consent operations and token introspection are deliberately excluded.
-        Assert.Equal(24, count);
+        // The spec has 31 operations. Not counted here: the instrument list (asserted
+        // on its own above), the two consent operations and token introspection.
+        Assert.Equal(27, count);
     }
 
     [Theory]

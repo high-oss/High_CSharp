@@ -68,6 +68,12 @@ public sealed class ScripsResource
             new RequestOptions { Method = HttpMethod.Post, Path = "/scrips/historical", Auth = AuthKind.Bearer, Body = body },
             cancellationToken);
 
+    /// <summary>OHLCV candles of the most recent trading session. Same columnar shape as <see cref="Historical"/>.</summary>
+    public Task<HistoricalCandles> IntradayAsync(IntradayRequest body, CancellationToken cancellationToken = default) =>
+        HighHttpTransport.SendAsync<HistoricalCandles>(_config,
+            new RequestOptions { Method = HttpMethod.Post, Path = "/scrips/intraday", Auth = AuthKind.Bearer, Body = body },
+            cancellationToken);
+
     /// <summary>The option chain for one underlying and expiry.</summary>
     public Task<OptionChain> OptionChain(OptionChainRequest body, CancellationToken cancellationToken = default) =>
         HighHttpTransport.SendAsync<OptionChain>(_config,

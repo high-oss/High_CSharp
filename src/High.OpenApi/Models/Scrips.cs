@@ -106,10 +106,22 @@ public sealed record OhlcRequest
     [JsonPropertyName("scripKeys")] public IReadOnlyList<string>? ScripKeys { get; init; }
 }
 
-/// <summary>Body of <c>POST /scrips/historical</c> (<c>scrips.Historical</c>).</summary>
+/// <summary>
+/// Body of <c>POST /scrips/historical</c> (<c>scrips.Historical</c>). Name the
+/// instrument by <see cref="TradingSymbol"/>, or by <see cref="ExchangeSegment"/>
+/// together with <see cref="ScripCode"/>.
+/// </summary>
 public sealed record HistoricalRequest
 {
-    [JsonPropertyName("tradingSymbol")] public required string TradingSymbol { get; init; }
+    /// <summary>Trading symbol from the instrument list. Leave it null when naming the instrument by segment and code.</summary>
+    [JsonPropertyName("tradingSymbol")] public string? TradingSymbol { get; init; }
+
+    /// <summary>Exchange segment. Send it with <see cref="ScripCode"/> when <see cref="TradingSymbol"/> is null.</summary>
+    [JsonPropertyName("exchangeSegment")] public ExchangeSegment? ExchangeSegment { get; init; }
+
+    /// <summary>Broker scrip code (token). Send it with <see cref="ExchangeSegment"/> when <see cref="TradingSymbol"/> is null.</summary>
+    [JsonPropertyName("scripCode")] public string? ScripCode { get; init; }
+
     [JsonPropertyName("interval")] public required HistoricalInterval Interval { get; init; }
 
     /// <summary>Start of the range, Unix epoch seconds.</summary>
@@ -117,6 +129,29 @@ public sealed record HistoricalRequest
 
     /// <summary>End of the range, Unix epoch seconds. Candles that open after it are left out.</summary>
     [JsonPropertyName("toTime")] public required long ToTime { get; init; }
+
+    /// <summary>Accepted but not used: every series is always returned.</summary>
+    [JsonPropertyName("fields")] public IReadOnlyList<string>? Fields { get; init; }
+}
+
+/// <summary>
+/// Body of <c>POST /scrips/intraday</c> (<c>scrips.Intraday</c>). Name the
+/// instrument by <see cref="TradingSymbol"/>, or by <see cref="ExchangeSegment"/>
+/// together with <see cref="ScripCode"/>.
+/// </summary>
+public sealed record IntradayRequest
+{
+    /// <summary>Trading symbol from the instrument list. Leave it null when naming the instrument by segment and code.</summary>
+    [JsonPropertyName("tradingSymbol")] public string? TradingSymbol { get; init; }
+
+    /// <summary>Exchange segment. Send it with <see cref="ScripCode"/> when <see cref="TradingSymbol"/> is null.</summary>
+    [JsonPropertyName("exchangeSegment")] public ExchangeSegment? ExchangeSegment { get; init; }
+
+    /// <summary>Broker scrip code (token). Send it with <see cref="ExchangeSegment"/> when <see cref="TradingSymbol"/> is null.</summary>
+    [JsonPropertyName("scripCode")] public string? ScripCode { get; init; }
+
+    /// <summary>Candle length. The intraday window is the last trading session, so there is no day-or-longer interval.</summary>
+    [JsonPropertyName("interval")] public required IntradayInterval Interval { get; init; }
 
     /// <summary>Accepted but not used: every series is always returned.</summary>
     [JsonPropertyName("fields")] public IReadOnlyList<string>? Fields { get; init; }

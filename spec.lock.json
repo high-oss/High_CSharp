@@ -1,7 +1,7 @@
 {
   "repo": "https://github.com/high-live/high-openapi-spec",
   "localRepo": "../spec",
-  "commit": "97cc3af3df39c0252b55306d9ce56accdad65c02",
+  "commit": "c1f37de4ec27245288ef9c9f83699c51f29b3b50",
   "file": "openapi.json",
   "vendoredAt": "spec/openapi.json"
 }

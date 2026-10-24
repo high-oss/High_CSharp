@@ -120,4 +120,87 @@ public class PortfolioResourceTests
         Assert.Equal("INTRADAY", sent.GetProperty("productType").GetString());
         Assert.Equal("REGULAR", sent.GetProperty("flavor").GetString());
     }
+
+    [Fact]
+    public async Task SetStoplossAsync_sends_PATCH_and_reads_the_placed_stop_leg()
+    {
+        using var server = new TestServer((ctx, _) => TestServerResponses.EnvelopeAsync(ctx, 200, "r", """
+            {"tradingSymbol":"RELIANCE-EQ","exchangeSegment":"NSE","scripCode":"2885","leg":"STOPLOSS",
+             "action":"PLACED","flavor":"REGULAR","orderId":"250512000012345","quantity":60,
+             "price":2400,"limitPrice":2399.95,"isSubmitted":true}
+            """));
+        using var client = ClientFor(server);
+
+        var result = await client.Portfolio.SetStoplossAsync(new SetStoplossRequest
+        {
+            TradingSymbol = "RELIANCE-EQ", Flavor = Flavor.Regular, ProductType = ExitProductType.Intraday, TriggerPrice = 2400,
+        });
+
+        Assert.Equal("/v1/portfolio/positions/stoploss", server.Requests[0].Url);
+        Assert.Equal("PATCH", server.Requests[0].Method);
+        Assert.Equal(RiskOrderLeg.StopLoss, result.Leg);
+        Assert.Equal(RiskOrderAction.Placed, result.Action);
+        Assert.Equal(2399.95, result.LimitPrice);
+        Assert.True(result.IsSubmitted);
+
+        var sent = JsonDocument.Parse(server.Requests[0].Body).RootElement;
+        Assert.Equal("RELIANCE-EQ", sent.GetProperty("tradingSymbol").GetString());
+        Assert.Equal("REGULAR", sent.GetProperty("flavor").GetString());
+        Assert.Equal("INTRADAY", sent.GetProperty("productType").GetString());
+        Assert.Equal(2400, sent.GetProperty("triggerPrice").GetDouble());
+        Assert.False(sent.TryGetProperty("orderId", out _));
+    }
+
+    [Fact]
+    public async Task SetStoplossAsync_by_segment_and_code_sends_the_amend_order_id_and_reads_a_modified_result()
+    {
+        using var server = new TestServer((ctx, _) => TestServerResponses.EnvelopeAsync(ctx, 200, "r", """
+            {"tradingSymbol":"RELIANCE-EQ","exchangeSegment":"NSE","scripCode":"2885","leg":"STOPLOSS",
+             "action":"MODIFIED","flavor":"GTT","orderId":"250512000012345","quantity":60,
+             "price":2380,"limitPrice":2379.95,"isSubmitted":true}
+            """));
+        using var client = ClientFor(server);
+
+        var result = await client.Portfolio.SetStoplossAsync(new SetStoplossRequest
+        {
+            ExchangeSegment = ExchangeSegment.Nse, ScripCode = "2885", Flavor = Flavor.Gtt,
+            ProductType = ExitProductType.Delivery, OrderId = "250512000012345", TriggerPrice = 2380,
+        });
+
+        Assert.Equal(RiskOrderAction.Modified, result.Action);
+        Assert.Equal(Flavor.Gtt, result.Flavor);
+
+        var sent = JsonDocument.Parse(server.Requests[0].Body).RootElement;
+        Assert.Equal("NSE", sent.GetProperty("exchangeSegment").GetString());
+        Assert.Equal("2885", sent.GetProperty("scripCode").GetString());
+        Assert.Equal("DELIVERY", sent.GetProperty("productType").GetString());
+        Assert.Equal("250512000012345", sent.GetProperty("orderId").GetString());
+        Assert.False(sent.TryGetProperty("tradingSymbol", out _));
+    }
+
+    [Fact]
+    public async Task SetTargetAsync_sends_PATCH_with_target_price_and_reads_the_target_leg()
+    {
+        using var server = new TestServer((ctx, _) => TestServerResponses.EnvelopeAsync(ctx, 200, "r", """
+            {"tradingSymbol":"RELIANCE-EQ","exchangeSegment":"NSE","scripCode":"2885","leg":"TARGET",
+             "action":"PLACED","flavor":"REGULAR","orderId":"250512000012346","quantity":60,
+             "price":2600,"isSubmitted":true}
+            """));
+        using var client = ClientFor(server);
+
+        var result = await client.Portfolio.SetTargetAsync(new SetTargetRequest
+        {
+            TradingSymbol = "RELIANCE-EQ", Flavor = Flavor.Regular, ProductType = ExitProductType.Intraday, TargetPrice = 2600,
+        });
+
+        Assert.Equal("/v1/portfolio/positions/target", server.Requests[0].Url);
+        Assert.Equal("PATCH", server.Requests[0].Method);
+        Assert.Equal(RiskOrderLeg.Target, result.Leg);
+        Assert.Equal(2600, result.Price);
+        Assert.Null(result.LimitPrice);
+
+        var sent = JsonDocument.Parse(server.Requests[0].Body).RootElement;
+        Assert.Equal(2600, sent.GetProperty("targetPrice").GetDouble());
+        Assert.False(sent.TryGetProperty("triggerPrice", out _));
+    }
 }

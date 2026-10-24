@@ -10,7 +10,7 @@
     <RootNamespace>High.OpenApi</RootNamespace>
     <AssemblyName>High.OpenApi</AssemblyName>
     <PackageId>High.OpenApi</PackageId>
-    <Version>0.0.1</Version>
+    <Version>0.1.0</Version>
     <Authors>High-OSS</Authors>
     <Description>Official .NET SDK for the HIGH Open API.</Description>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
