@@ -168,13 +168,14 @@ await high.Scrips.Quotes(new QuotesRequest { Symbols = new[] { "RELIANCE-EQ" } }
 
 ## Resources
 
-27 operations across five namespaces.
+28 operations across six namespaces.
 
 | Namespace | Methods |
 |---|---|
 | `Auth` | `GenerateAccessToken` |
 | `Orders` | `Place` · `Modify` · `Get` · `Cancel` · `List` · `Trades` · `TradesFor` · `Charges` · `Margin` |
 | `Portfolio` | `Positions` · `Holdings` · `Funds` · `ConvertPosition` · `SetStoplossAsync` · `SetTargetAsync` · `ExitAllPositions` · `ExitPosition` |
+| `Profile` | `GetAsync` |
 | `Scrips` | `Quotes` · `Ohlc` · `Depth` · `Expiries` · `FutureData` · `Historical` · `IntradayAsync` · `OptionChain` |
 | `Market` | `Status` |
 

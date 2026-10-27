@@ -12,13 +12,14 @@ namespace High.OpenApi.Tests;
 public class PublicSurfaceTests
 {
     [Fact]
-    public void Exposes_all_five_resources_on_a_constructed_client()
+    public void Exposes_all_six_resources_on_a_constructed_client()
     {
         using var client = new HighClient(new HighClientOptions { AccessToken = "tok" });
         Assert.NotNull(client.Auth);
         Assert.NotNull(client.Market);
         Assert.NotNull(client.Orders);
         Assert.NotNull(client.Portfolio);
+        Assert.NotNull(client.Profile);
         Assert.NotNull(client.Scrips);
     }
 
@@ -28,7 +29,7 @@ public class PublicSurfaceTests
         using var client = new HighClient(new HighClientOptions { AccessToken = "tok" });
         Assert.NotNull(client.Instruments);
 
-        // Not part of the 27-operation shared contract counted below: the
+        // Not part of the 28-operation shared contract counted below: the
         // instrument list is resolved through an internal manifest, not a
         // directly wrapped REST operation, so it is asserted on its own.
         var publicMethodNames = typeof(InstrumentsResource)
@@ -48,6 +49,7 @@ public class PublicSurfaceTests
             [typeof(AuthResource)] = new[] { "GenerateAccessToken" },
             [typeof(OrdersResource)] = new[] { "Place", "Modify", "Get", "Cancel", "List", "Trades", "TradesFor", "Charges", "Margin" },
             [typeof(PortfolioResource)] = new[] { "Positions", "Holdings", "Funds", "ConvertPosition", "SetStoplossAsync", "SetTargetAsync", "ExitAllPositions", "ExitPosition" },
+            [typeof(ProfileResource)] = new[] { "GetAsync" },
             [typeof(ScripsResource)] = new[] { "Quotes", "Ohlc", "Depth", "Expiries", "FutureData", "Historical", "IntradayAsync", "OptionChain" },
             [typeof(MarketResource)] = new[] { "Status" },
         };
@@ -67,9 +69,9 @@ public class PublicSurfaceTests
             }
         }
 
-        // The spec has 31 operations. Not counted here: the instrument list (asserted
+        // The spec has 32 operations. Not counted here: the instrument list (asserted
         // on its own above), the two consent operations and token introspection.
-        Assert.Equal(27, count);
+        Assert.Equal(28, count);
     }
 
     [Theory]

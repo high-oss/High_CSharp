@@ -33,6 +33,7 @@ public sealed class HighClient : IDisposable
     public MarketResource Market { get; }
     public OrdersResource Orders { get; }
     public PortfolioResource Portfolio { get; }
+    public ProfileResource Profile { get; }
     public ScripsResource Scrips { get; }
     public InstrumentsResource Instruments { get; }
 
@@ -43,6 +44,7 @@ public sealed class HighClient : IDisposable
         Market = new MarketResource(Config);
         Orders = new OrdersResource(Config);
         Portfolio = new PortfolioResource(Config);
+        Profile = new ProfileResource(Config);
         Scrips = new ScripsResource(Config);
         Instruments = new InstrumentsResource(Config);
     }
